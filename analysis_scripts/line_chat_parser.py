@@ -4,7 +4,7 @@ from typing import Optional
 import re
 import csv
 
-DATE_PATTERN = re.compile(r"\d{4}/\d{2}/\d{2}（[一二三四五六日]）")
+DATE_PATTERN = re.compile(r"(\d{4}/\d{2}/\d{2})(（[一二三四五六日]）)")
 MSG_PATTERN = re.compile(r"^([上下]午)(\d{2}):(\d{2})[ \t]([^\t\n]+)\t?(.*)")
 """
 for normal message, like
@@ -43,7 +43,8 @@ class LineChatParser:
         with open(file_path, 'r', encoding='UTF-8') as txt:
             for line in txt:
                 line = line.strip()
-                self.match_date_header(line)
+                if self.match_date_header(line):
+                    continue
                 # skip lines when there is no matching date
                 if not self.cur_date:
                     continue
@@ -57,12 +58,13 @@ class LineChatParser:
         if self.building_valid_msg():
             self.flush_cur_msg()
 
-    def match_date_header(self, line: str) -> None:
+    def match_date_header(self, line: str) -> bool:
         matches = re.findall(DATE_PATTERN, line)
         if len(matches) != 1:
-            return
-        date_str = matches[0][:-3].replace("/", "-")
+            return False
+        date_str = matches[0][0].replace("/", "-")
         self.cur_date = datetime.date.fromisoformat(date_str)
+        return True
 
     def match_msg_start(self, line: str) -> bool:
         # match system msg
@@ -108,6 +110,15 @@ if __name__ == '__main__':
     with open('line_chat_20220307.csv', 'w', encoding='UTF-8') as f:
         writer = csv.writer(f)
 
+        # some tests
+        assert parser.results[0][0] == datetime.datetime(2022, 11, 16, 20, 12, tzinfo=TIME_ZONE)
+        assert parser.results[0][1] == "Spam Filter"
+        assert parser.results[0][2] == "您好！我是垃圾訊息過濾器，能自動過濾聊天室中的垃圾訊息。僅限管理員可變更垃圾訊息過濾器的相關設定喔。"
+        assert parser.results[-1][0] == datetime.datetime(2023, 3, 7, 13, 25, tzinfo=TIME_ZONE)
+        assert parser.results[-1][1] == "ED"
+        assert parser.results[-1][2] == "[桃園/ 桃園區藝文特區]誠徵醫美專職醫師🔹時間：每週四14:00-20:00🔹項目：各式微整、電音波、雷射🔹待遇：1）一天兩診診費$100002" \
+                                        "）PPF依照經驗 面議🔹其他補充：1）配有醫師專屬停車位2）長期配合可重點培訓🔹聯絡方式：0926-043-473湯先生。"
         for res in parser.results:
+            # print(res)
             utc_ts = res[0].replace(tzinfo=datetime.timezone.utc).timestamp()
             writer.writerow((utc_ts, res[1], res[2]))
