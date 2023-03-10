@@ -4,6 +4,8 @@ from typing import Optional
 import re
 import csv
 
+from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
+
 DATE_PATTERN = re.compile(r"(\d{4}/\d{2}/\d{2})(（[一二三四五六日]）)")
 MSG_PATTERN = re.compile(r"^([上下]午)(\d{2}):(\d{2})[ \t]([^\t\n]+)\t?(.*)")
 """
@@ -105,9 +107,9 @@ class LineChatParser:
 
 if __name__ == '__main__':
     parser = LineChatParser()
-    parser.read_line_chat("LINE______104A....txt")
+    parser.read_line_chat("data/LINE______104A....txt")
 
-    with open('line_chat_20220307.csv', 'w', encoding='UTF-8') as f:
+    with open('data/line_chat_20220307.csv', 'w', encoding='UTF-8') as f:
         writer = csv.writer(f)
 
         # some tests
@@ -118,7 +120,10 @@ if __name__ == '__main__':
         assert parser.results[-1][1] == "ED"
         assert parser.results[-1][2] == "[桃園/ 桃園區藝文特區]誠徵醫美專職醫師🔹時間：每週四14:00-20:00🔹項目：各式微整、電音波、雷射🔹待遇：1）一天兩診診費$100002" \
                                         "）PPF依照經驗 面議🔹其他補充：1）配有醫師專屬停車位2）長期配合可重點培訓🔹聯絡方式：0926-043-473湯先生。"
+
+        writer.writerow(csv_header())
         for res in parser.results:
             # print(res)
             utc_ts = res[0].replace(tzinfo=datetime.timezone.utc).timestamp()
-            writer.writerow((utc_ts, res[1], res[2]))
+            msg = LineChatMsg(utc_ts, res[1], res[2])
+            writer.writerow(msg.to_csv_row()[:3])
