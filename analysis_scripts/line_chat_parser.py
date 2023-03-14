@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
-import datetime
-from typing import Optional
-import re
 import csv
+import datetime
+import re
+from typing import Optional
 
 from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
+from analysis_scripts.msg_filter import KeywordFilter, StrLenFilter, CityFilter, DeptFilter
+from city_tagger import CityTagger
+from department_tagger import DepartmentTagger
+
+SOURCE_TXT = "data/LINE______104A....txt"
+RESULT_CSV = "data/line_chat_20220307_algo.csv"
 
 DATE_PATTERN = re.compile(r"(\d{4}/\d{2}/\d{2})(（[一二三四五六日]）)")
 MSG_PATTERN = re.compile(r"^([上下]午)(\d{2}):(\d{2})[ \t]([^\t\n]+)\t?(.*)")
@@ -30,6 +36,7 @@ TIME_ZONE = datetime.timezone(datetime.timedelta(hours=8))
 
 
 class LineChatParser:
+    """Parse history messages to message objects"""
 
     def __init__(self):
         self.results: list[tuple[datetime.datetime, str, str]] = []
@@ -106,24 +113,25 @@ class LineChatParser:
 
 
 if __name__ == '__main__':
+    """Parse history messages from txt then write to csv"""
     parser = LineChatParser()
-    parser.read_line_chat("data/LINE______104A....txt")
+    parser.read_line_chat(SOURCE_TXT)
+    city_tagger = CityTagger()
+    dept_tagger = DepartmentTagger()
+    filters = [KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援"}), StrLenFilter(30), DeptFilter(), CityFilter()]
 
-    with open('data/line_chat_20220307.csv', 'w', encoding='UTF-8') as f:
+    # 加上地區及科別標籤，並依照filters判斷是否為職缺訊息
+    msg_list = []
+    for res in parser.results:
+        utc_ts = int(res[0].replace(tzinfo=datetime.timezone.utc).timestamp())
+        msg = LineChatMsg(utc_ts, res[1], res[2])
+        msg.city_tags = city_tagger.tags_from_msg(msg.content)
+        msg.dept_tags = dept_tagger.tags_from_msg(msg.content)
+        msg.is_recruitment = all(f.apply(msg) for f in filters)
+        msg_list.append(msg)
+
+    with open(RESULT_CSV, 'w', encoding='UTF-8') as f:
         writer = csv.writer(f)
-
-        # some tests
-        assert parser.results[0][0] == datetime.datetime(2022, 11, 16, 20, 12, tzinfo=TIME_ZONE)
-        assert parser.results[0][1] == "Spam Filter"
-        assert parser.results[0][2] == "您好！我是垃圾訊息過濾器，能自動過濾聊天室中的垃圾訊息。僅限管理員可變更垃圾訊息過濾器的相關設定喔。"
-        assert parser.results[-1][0] == datetime.datetime(2023, 3, 7, 13, 25, tzinfo=TIME_ZONE)
-        assert parser.results[-1][1] == "ED"
-        assert parser.results[-1][2] == "[桃園/ 桃園區藝文特區]誠徵醫美專職醫師🔹時間：每週四14:00-20:00🔹項目：各式微整、電音波、雷射🔹待遇：1）一天兩診診費$100002" \
-                                        "）PPF依照經驗 面議🔹其他補充：1）配有醫師專屬停車位2）長期配合可重點培訓🔹聯絡方式：0926-043-473湯先生。"
-
         writer.writerow(csv_header())
-        for res in parser.results:
-            # print(res)
-            utc_ts = res[0].replace(tzinfo=datetime.timezone.utc).timestamp()
-            msg = LineChatMsg(utc_ts, res[1], res[2])
-            writer.writerow(msg.to_csv_row()[:3])
+        for msg in msg_list:
+            writer.writerow(msg.to_csv_row())
