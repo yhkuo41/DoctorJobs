@@ -2,10 +2,9 @@ import csv
 from pprint import pprint
 
 import numpy as np
-from matplotlib import pyplot as plt
 
+import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, str2set
-from analysis_scripts.msg_filter import KeywordFilter, StrLenFilter
 
 ALGO_CSV = "data/line_chat_20220307_algo.csv"
 MAN_CSV = "data/line_chat_20220307_man.csv"
@@ -107,15 +106,11 @@ if __name__ == '__main__':
     truth = np.array([m.is_recruitment for m in man_msgs])
     algo = np.array([m.is_recruitment for m in algo_msgs])
 
-    print(f"""
-過濾條件, 以下皆須滿足才判斷為職缺訊息: 
-1. 訊息長度>30
-2. 經過CityTagger後有縣市行政區標籤
-3. 經過DepartmentTagger後有醫師科別標籤
-4. 包含其中一個關鍵字"徵", "職缺", "禮聘", "誠聘", "支援"
+    print("過濾條件, 以下皆須滿足才判斷為職缺訊息:")
+    for i in range(len(msg_filter.filters)):
+        print(f"{i}. {msg_filter.filters[i].filter_condition()}")
+    print(f"判別結果: {tpfp(algo, truth)}\n")
 
-判別結果: {tpfp(algo, truth)}
-    """)
     fn_msgs = []
     fp_msgs = []
     for i in range(len(man_msgs)):
