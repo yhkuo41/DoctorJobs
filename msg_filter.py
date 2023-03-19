@@ -25,7 +25,7 @@ class KeywordFilter:
         return False
 
     def filter_condition(self):
-        return f"包含其中一個關鍵字{self.keywords}"
+        return f"包含其中一個關鍵字 {self.keywords}"
 
 
 class StrLenFilter:
@@ -44,7 +44,7 @@ class StrLenFilter:
         raise NotImplementedError(f"not support msg type: {type(msg)}")
 
     def filter_condition(self):
-        return f"訊息長度>{self.min_len}"
+        return f"訊息長度 > {self.min_len}"
 
 
 class DeptFilter:
@@ -90,4 +90,8 @@ class DeptOrCityFilter:
         return f"{DeptFilter.filter_condition()} OR {CityFilter.filter_condition()}"
 
 
-filters = [KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援"}), StrLenFilter(30), DeptOrCityFilter()]
+filters = [
+    KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援", "急需", "需求"}),
+    StrLenFilter(30),
+    DeptOrCityFilter()
+]

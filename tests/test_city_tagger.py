@@ -313,6 +313,13 @@ class TestCityTagger(TestCase):
 
         self.assertEqual(expect, self.tagger.tags_from_msg(msg))
 
+    def test_tags_from_msg6(self):
+        """tags from keyword 北市"""
+        msg = "*北市信義區優質健保診所禮聘：【掛牌負責人醫師】待遇：掛牌費+診費+PPF合作模式可面議請联络：0910100785黃小姐"
+        expect = {"臺北市"}
+
+        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+
     def test_tags_from_msg_empty(self):
         """tags from keyword 內壢"""
         msg = "以上職缺(部分重複刊登)轉載自5000人/實名制群 👉歡迎雇主自貼 待聘醫師自薦👈"

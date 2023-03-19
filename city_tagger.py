@@ -100,7 +100,8 @@ class CityTagger:
                 "嘉南": {"嘉義縣", "嘉義市", "臺南市"},
                 "高屏": {"高雄市", "屏東縣"},
                 "花東": {"花蓮縣", "臺東縣"},
-                "內壢": {"桃園市"}
+                "內壢": {"桃園市"},
+                "北市": {"臺北市"}
             }
         self.special_keyword2cities = special_keyword2cities
         self.keyword2city = {}
