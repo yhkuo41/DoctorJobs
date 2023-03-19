@@ -4,8 +4,8 @@ import datetime
 import re
 from typing import Optional
 
+import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
-from analysis_scripts.msg_filter import KeywordFilter, StrLenFilter, CityFilter, DeptFilter
 from city_tagger import CityTagger
 from department_tagger import DepartmentTagger
 
@@ -118,7 +118,6 @@ if __name__ == '__main__':
     parser.read_line_chat(SOURCE_TXT)
     city_tagger = CityTagger()
     dept_tagger = DepartmentTagger()
-    filters = [KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援"}), StrLenFilter(30), DeptFilter(), CityFilter()]
 
     # 加上地區及科別標籤，並依照filters判斷是否為職缺訊息
     msg_list = []
@@ -127,7 +126,7 @@ if __name__ == '__main__':
         msg = LineChatMsg(utc_ts, res[1], res[2])
         msg.city_tags = city_tagger.tags_from_msg(msg.content)
         msg.dept_tags = dept_tagger.tags_from_msg(msg.content)
-        msg.is_recruitment = all(f.apply(msg) for f in filters)
+        msg.is_recruitment = all(f.apply(msg) for f in msg_filter.filters)
         msg_list.append(msg)
 
     with open(RESULT_CSV, 'w', encoding='UTF-8') as f:

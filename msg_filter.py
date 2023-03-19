@@ -24,6 +24,9 @@ class KeywordFilter:
                 return True
         return False
 
+    def filter_condition(self):
+        return f"包含其中一個關鍵字{self.keywords}"
+
 
 class StrLenFilter:
     def __init__(self, min_len: int):
@@ -40,6 +43,9 @@ class StrLenFilter:
 
         raise NotImplementedError(f"not support msg type: {type(msg)}")
 
+    def filter_condition(self):
+        return f"訊息長度>{self.min_len}"
+
 
 class DeptFilter:
     @staticmethod
@@ -51,6 +57,10 @@ class DeptFilter:
             return True
         return False
 
+    @staticmethod
+    def filter_condition():
+        return f"經過DepartmentTagger後有醫師科別標籤"
+
 
 class CityFilter:
     @staticmethod
@@ -61,3 +71,23 @@ class CityFilter:
         if msg.city_tags:
             return True
         return False
+
+    @staticmethod
+    def filter_condition():
+        return f"經過CityTagger後有縣市行政區標籤"
+
+
+class DeptOrCityFilter:
+    @staticmethod
+    def apply(msg: LineChatMsg) -> bool:
+        """
+        return True if the msg is a recruitment message
+        """
+        return CityFilter.apply(msg) or DeptFilter.apply(msg)
+
+    @staticmethod
+    def filter_condition():
+        return f"{DeptFilter.filter_condition()} OR {CityFilter.filter_condition()}"
+
+
+filters = [KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援"}), StrLenFilter(30), DeptOrCityFilter()]
