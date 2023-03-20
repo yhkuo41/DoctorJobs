@@ -104,7 +104,9 @@ class CityTagger:
                 "北市": {"臺北市"}
             }
         self.special_keyword2cities = special_keyword2cities
+        """特殊關鍵字 to 城市清單 e.g. "北北基桃": {"臺北市", "新北市", "基隆市", "桃園市"}"""
         self.keyword2city = {}
+        """關鍵字 to 城市清單 e.g. {'臺北': '臺北市', '臺北中山': '臺北市', '臺北市中山': '臺北市'}"""
         counter = Counter()
         for city, districts in city2dist.items():
             for dist in districts:

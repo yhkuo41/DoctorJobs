@@ -6,6 +6,7 @@ class KeywordFilter:
         if keywords is None:
             keywords = {}
         self.keywords = keywords.copy()
+        """關鍵字清單，訊息包含至少一個關鍵字才視為職缺訊息"""
 
     def apply(self, msg) -> bool:
         """
@@ -31,6 +32,7 @@ class KeywordFilter:
 class StrLenFilter:
     def __init__(self, min_len: int):
         self.min_len = min_len
+        """最小字串長度，訊息長度大於等於此長度才視為職缺訊息"""
 
     def apply(self, msg) -> bool:
         """
@@ -44,7 +46,7 @@ class StrLenFilter:
         raise NotImplementedError(f"not support msg type: {type(msg)}")
 
     def filter_condition(self):
-        return f"訊息長度 > {self.min_len}"
+        return f"訊息長度 >= {self.min_len}"
 
 
 class DeptFilter:
