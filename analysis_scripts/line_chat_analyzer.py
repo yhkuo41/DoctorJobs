@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     print("過濾條件, 以下皆須滿足才判斷為職缺訊息:")
     for i in range(len(msg_filter.filters)):
-        print(f"{i}. {msg_filter.filters[i].filter_condition()}")
+        print(f"{i + 1}. {msg_filter.filters[i].filter_condition()}")
     print(f"判別結果: {tpfp(algo, truth)}\n")
 
     fn_msgs = []
