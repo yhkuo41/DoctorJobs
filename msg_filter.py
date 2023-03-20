@@ -91,7 +91,7 @@ class DeptOrCityFilter:
 
 
 filters = [
-    KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援", "急需", "需求"}),
+    KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援", "急需", "需求", "每診"}),
     StrLenFilter(30),
     DeptOrCityFilter()
 ]
