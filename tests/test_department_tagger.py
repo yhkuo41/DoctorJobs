@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from department_tagger import DepartmentTagger
+from services.department_tagger import DepartmentTagger
 
 
 class TestDepartmentTagger(TestCase):
