@@ -9,7 +9,7 @@ uvicorn main:app --reload
 
 ## Instructions to build Python environment
 
-### Linux, using Python 3, virtualenv
+### Linux, using Python 3.10, virtualenv
 
 Install system packages
 
