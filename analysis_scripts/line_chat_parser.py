@@ -105,7 +105,7 @@ class LineChatParser:
 
     def flush_cur_msg(self) -> None:
         dt = datetime.datetime.combine(self.cur_date, self.cur_msg_time, TIME_ZONE)
-        self.cur_msg = self.cur_msg.replace('"', '')
+        self.cur_msg = self.cur_msg.replace('"', '').replace("\t", " ")
         self.results.append((dt, self.cur_msg_user, self.cur_msg))
         self.cur_msg = None
         self.cur_msg_time = None
