@@ -1,12 +1,6 @@
 # Doctor Jobs
 
 ...
-
-## Run FastAPI application
-```
-uvicorn main:app --reload
-```
-
 ## Instructions to build Python environment
 
 ### Linux, using Python 3.10, virtualenv
@@ -19,6 +13,10 @@ Install remaining packages in virtualenv
 
     virtualenv -p `which python3` venv
     ./venv/bin/pip3 install -r requirements.txt
+
+Export package information
+
+    pip freeze > requirements.txt
 
 ### Run tests in command line
 
@@ -34,3 +32,17 @@ or
 
 If you PyCharm project is the repository, then mark root directory as sources root (in Project panel, in the
 context menu of directory "Mark Directory As" -> "Sources Root").
+
+## Run FastAPI application and Expose Port
+
+    uvicorn main:app --reload --port 8000
+    ngrok http 8000
+
+## Docker
+### Build Image
+
+    DOCKER_BUILDKIT=1 docker build -t doctorjobs:latest .
+
+### Run Docker Compose
+
+    docker-compose up -d
