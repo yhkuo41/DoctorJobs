@@ -2,20 +2,24 @@ from analysis_scripts.line_chat_msg import LineChatMsg
 
 
 class KeywordFilter:
-    def __init__(self, keywords=None):
+    def __init__(self, keywords=None, neg_keywords=None):
         if keywords is None:
             keywords = {}
+        if neg_keywords is None:
+            neg_keywords = {}
         self.keywords = keywords.copy()
         """關鍵字清單，訊息包含至少一個關鍵字才視為職缺訊息"""
+        self.neg_keywords = neg_keywords.copy()
+        """反向關鍵字清單，訊息中包含任一關鍵字則非職缺訊息"""
 
     def apply(self, msg) -> bool:
         """
         return True if the msg is a recruitment message
         """
         if isinstance(msg, str):
-            return self.contains_any_keyword(msg)
+            return self.contains_any_keyword(msg) and self.not_contains_any_neg_keyword(msg)
         elif isinstance(msg, LineChatMsg):
-            return self.contains_any_keyword(msg.content)
+            return self.contains_any_keyword(msg.content) and self.not_contains_any_neg_keyword(msg.content)
 
         raise NotImplementedError(f"not support msg type: {type(msg)}")
 
@@ -25,8 +29,15 @@ class KeywordFilter:
                 return True
         return False
 
+    def not_contains_any_neg_keyword(self, msg: str) -> bool:
+        for k in self.neg_keywords:
+            if k in msg:
+                return False
+        return True
+
     def filter_condition(self):
-        return f"包含其中一個關鍵字 {self.keywords}"
+        return f"""包含 {self.keywords} 其中一個關鍵字
+且不包含 {self.neg_keywords} 任一關鍵字"""
 
 
 class StrLenFilter:
@@ -93,7 +104,11 @@ class DeptOrCityFilter:
 
 
 filters = [
-    KeywordFilter({"徵", "職缺", "禮聘", "誠聘", "支援", "急需", "需求", "每診"}),
+    KeywordFilter(
+        keywords={"徵", "職缺", "禮聘", "誠聘", "支援", "急需", "需求", "每診", "聯絡", "請洽", "意者", "工作經驗",
+                  "疫苗診", "疫苗快打", "掛牌", "掛照", "開業科", "拓點", "不限專科", "各科", "不限科", "一般科"},
+        neg_keywords={"參考格式", "格式參考", "已被邀請加入", "善用關鍵字搜尋", "內幕", "需自行查證"}
+    ),
     StrLenFilter(30),
     DeptOrCityFilter()
 ]

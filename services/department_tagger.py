@@ -3,6 +3,12 @@ from collections import defaultdict
 
 class DepartmentTagger:
     def __init__(self, dept2keywords: dict[str:set[str]] = None, neg_keywords2depts: dict[str:set[str]] = None):
+        """
+        Tagger to extract doctor departments from the message
+        Args:
+            dept2keywords: 科別標準名稱 to 關鍵字列表
+            neg_keywords2depts: 反向關鍵字 to 科別列表，排除過濾用
+        """
         if not dept2keywords:
             # TODO 一般科?
             dept2keywords = {
@@ -39,13 +45,14 @@ class DepartmentTagger:
                 "職業醫學科": {"職業醫學", "職醫", "廠醫"},
                 "醫學美容科": {"醫學美容", "醫美", "醫療美容"},
                 "醫學影像科": {"醫影", "醫療影像科", "放射科", "放射", "放射腫瘤科", "放腫"},
+                "一般科": {"不限專科", "各科", "不限科"},
+                "特殊需求": {"疫苗診", "疫苗快打", "疫苗支援", "掛牌", "掛照", "開業科", "拓點"}
             }
         if not neg_keywords2depts:
             neg_keywords2depts = {
                 "神經內外": {"內科", "外科"}
             }
         self.neg_keywords2depts = neg_keywords2depts
-        """反向關鍵字 to 科別列表，排除過濾用"""
         self.keyword2depts = defaultdict(set)
         """關鍵字 to 科別列表"""
         self.keyword2depts["神經內外"].update({"神經內科", "神經外科"})

@@ -3,6 +3,11 @@ from collections import Counter
 
 class CityTagger:
     def __init__(self, special_keyword2cities: dict[str:set[str]] = None, distinct_districts: set[str] = None):
+        """Tagger to extract Taiwan cities from the message
+        Args:
+            special_keyword2cities: 特殊關鍵字 to 城市清單 e.g. "北北基桃": {"臺北市", "新北市", "基隆市", "桃園市"}
+            distinct_districts: 鄉鎮市區去掉最後一字，且其名稱必須明確是行政區，不會與街道、常用詞混淆
+        """
         city2dist = {
             '臺北市': {
                 '中正區', '大同區', '中山區', '萬華區', '信義區', '松山區', '大安區', '南港區', '北投區', '內湖區',
@@ -104,7 +109,6 @@ class CityTagger:
                 "北市": {"臺北市"}
             }
         self.special_keyword2cities = special_keyword2cities
-        """特殊關鍵字 to 城市清單 e.g. "北北基桃": {"臺北市", "新北市", "基隆市", "桃園市"}"""
         self.keyword2city = {}
         """關鍵字 to 城市清單 e.g. {'臺北': '臺北市', '臺北中山': '臺北市', '臺北市中山': '臺北市'}"""
         counter = Counter()
@@ -112,7 +116,6 @@ class CityTagger:
             for dist in districts:
                 counter[dist] += 1
         if not distinct_districts:
-            # 鄉鎮市區去掉最後一字，且其名稱必須明確是行政區，不會與街道、常用詞混淆
             distinct_districts = {"萬華", "南港", "北投", "內湖", "烏來", "深坑", "三峽", "土城", "三重", "汐止",
                                   "板橋", "平溪", "新店", "瑞芳", "貢寮", "石碇", "鶯歌", "林口", "蘆洲", "新莊",
                                   "七堵", "蘆竹", "大園", "中壢", "平鎮", "楊梅", "龍潭", "竹東", "湖口", "竹北",
