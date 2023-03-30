@@ -4,10 +4,10 @@ import datetime
 import re
 from typing import Optional
 
+from analysis_scripts import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
-from app.job_msg import msg_filter
-from app.job_msg.tagger.city_tagger import CityTagger
-from app.job_msg.tagger.department_tagger import DepartmentTagger
+from app.job_msg.tagger.city_tagger import city_tagger
+from app.job_msg.tagger.department_tagger import dept_tagger
 
 SOURCE_TXT = "data/LINE______104A....txt"
 RESULT_CSV = "data/line_chat_20220307_algo.csv"
@@ -116,16 +116,14 @@ if __name__ == '__main__':
     """Parse history messages from txt then write to csv"""
     parser = LineChatParser()
     parser.read_line_chat(SOURCE_TXT)
-    city_tagger = CityTagger()
-    dept_tagger = DepartmentTagger()
 
     # 加上地區及科別標籤，並依照filters判斷是否為職缺訊息
     msg_list = []
     for res in parser.results:
         utc_ts = int(res[0].replace(tzinfo=datetime.timezone.utc).timestamp())
         msg = LineChatMsg(utc_ts, res[1], res[2])
-        msg.city_tags = city_tagger.tags_from_msg(msg.content)
-        msg.dept_tags = dept_tagger.tags_from_msg(msg.content)
+        msg.city_tags = [e.value for e in city_tagger.tags_from_msg(msg.content)]
+        msg.dept_tags = [e.value for e in dept_tagger.tags_from_msg(msg.content)]
         msg.is_recruitment = all(f.apply(msg) for f in msg_filter.filters)
         msg_list.append(msg)
 

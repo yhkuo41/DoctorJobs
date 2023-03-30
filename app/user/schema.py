@@ -21,6 +21,9 @@ class UserBase(BaseModel):
     line_user_id: Optional[str]
     name: constr(min_length=1, max_length=50)
 
+    class Config:
+        anystr_strip_whitespace = True  # remove trailing whitespace
+
     @validator('account', 'password')
     def has_min_length(cls, v):
         min_length = 6
@@ -46,9 +49,7 @@ class UserBase(BaseModel):
 class User(UserBase):
     user_id: str
     create_ts: datetime
-    """create timestamp (UTC)"""
     update_ts: datetime
-    """update timestamp (UTC)"""
     is_delete: bool
 
     @classmethod
@@ -62,7 +63,7 @@ class User(UserBase):
             email=res['email'],
             line_user_id=res['line_user_id'],
             name=res['name'],
-            create_ts=res['create_ts'],
+            create_ts=res['_id'].generation_time,
             update_ts=res['update_ts'],
             is_delete=res['is_delete']
         )
@@ -78,4 +79,4 @@ class User(UserBase):
 
 
 class UserCreateResponse(BaseModel):
-    id: str
+    user_id: str

@@ -40,7 +40,7 @@ class TestUser(TestCase):
         self.assertIn("value is not a valid email address", msg)
 
     def test_create_user(self):
-        user = UserBase(account="123456", password="123456a", email="a@gmail.com", name="n")
+        user = UserBase(account=" 123456 ", password="123456a", email=" a@gmail.com ", name=" n ")
 
         self.assertEqual("123456", user.account)
         self.assertEqual("123456a", user.password.get_secret_value())

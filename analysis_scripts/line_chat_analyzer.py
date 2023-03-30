@@ -3,8 +3,8 @@ from pprint import pprint
 
 import numpy as np
 
+from analysis_scripts import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, str2set
-from app.job_msg import msg_filter
 
 ALGO_CSV = "data/line_chat_20220307_algo.csv"
 MAN_CSV = "data/line_chat_20220307_man.csv"

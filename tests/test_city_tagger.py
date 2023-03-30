@@ -1,11 +1,10 @@
 from unittest import TestCase
 
-from app.job_msg.tagger.city_tagger import CityTagger
+from app.job_msg.schema import JobMsgDebugResponse
+from app.job_msg.tagger.city_tagger import city_tagger
 
 
 class TestCityTagger(TestCase):
-    tagger = CityTagger()
-
     def test_init(self):
         expect = {'臺北': '臺北市', '臺北中山': '臺北市', '臺北市中山': '臺北市', '臺北大同': '臺北市',
                   '臺北市大同': '臺北市', '臺北中正': '臺北市', '臺北市中正': '臺北市', '臺北南港': '臺北市',
@@ -264,7 +263,7 @@ class TestCityTagger(TestCase):
                   '台東東河': '臺東縣', '台東縣東河': '臺東縣', '台東鹿野': '臺東縣', '台東縣鹿野': '臺東縣',
                   '台東池上': '臺東縣', '台東縣池上': '臺東縣', '台東海端': '臺東縣', '台東縣海端': '臺東縣',
                   '台東大武': '臺東縣', '台東縣大武': '臺東縣'}
-        self.assertEqual(expect, self.tagger.keyword2city)
+        self.assertEqual(expect, city_tagger.keyword2city)
 
     def test_tags_from_msg1(self):
         """tags from keyword 雙北"""
@@ -273,7 +272,7 @@ class TestCityTagger(TestCase):
               "需配合醫院關於臨場服務的規範和要求；4. 在提前告知並被允許的情況下，可以兼職支援其他醫療機構；5.無臨場服務經驗，亦可.若有興趣，可電話聯繫徐小姐：02-2577-8660#263."
         expect = {"新北市", "臺北市"}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg2(self):
         """tags from long msg"""
@@ -300,76 +299,83 @@ class TestCityTagger(TestCase):
               "1位支援費用：3435元（施打人數超過100人支援費用5000元）"
         expect = {'屏東縣'}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg3(self):
         """tags from keyword 高屏"""
         msg = "轉po「急」誠徵職業醫學專科醫師掛照高屏地區醫院掛牌費：優聯絡： 0963309077 或吳小姐 0902217168"
         expect = {"屏東縣", "高雄市"}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg4(self):
         """tags from keyword 桃竹, 竹苗"""
         msg = "桃竹苗地區"
         expect = {"桃園市", "新竹市", "新竹縣", "苗栗縣"}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg5(self):
         """tags from keyword 內壢"""
         msg = "內壢/專任/不分科(家醫科)"
         expect = {"桃園市"}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg6(self):
         """tags from keyword 北市"""
         msg = "*北市信義區優質健保診所禮聘：【掛牌負責人醫師】待遇：掛牌費+診費+PPF合作模式可面議請联络：0910100785黃小姐"
         expect = {"臺北市"}
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
     def test_tags_from_msg_empty(self):
         """tags from keyword 內壢"""
         msg = "以上職缺(部分重複刊登)轉載自5000人/實名制群 👉歡迎雇主自貼 待聘醫師自薦👈"
         expect = set()
 
-        self.assertEqual(expect, self.tagger.tags_from_msg(msg))
+        self.assertEqual(expect, city_tagger.tags_from_msg(msg))
 
-    def test_keywords_from_msg1(self):
-        """keywords from long msg"""
-        msg = "屏東多點/單次/疫苗?(其實公部門是可以找出名目，從3435 加到5000 的🤭🤔👈👈👈👈)與原住民共度聖誕跨年佳節，  " \
-              "這職缺貼文要轉念一下，親近大自然的好機會。屏東醫師公會會務人員，轉自轉知衛生局詢問需要找支援醫師，" \
-              "請可以支援醫師填寫姓名於下方空格，謝謝。支援單位@施打地點泰武鄉衛生所@Singlit樂智社區服務據點12" \
-              "/23(五)上午0850-1200 (          )" \
-              "1位來義鄉衛生所@南和活動中心12/24(六)上午0850-1200(洪敏榮)" \
-              "1位來義鄉衛生所@望嘉活動中心12/24(六)下午1250-1600(         )" \
-              "1位鹽埔鄉衛生所@7-11永盛門市12/24(六)上午0850-1200(          )" \
-              "1位鹽埔鄉衛生所@洛陽村龍虎宮12/24(六)下午1250-1600(          )" \
-              "1位春日鄉衛生所@力里集會所12/26(一)上午0850-1200(         )" \
-              "1位春日鄉衛生所@春日集會所12/26(一)下午1250-1600(         )" \
-              "1位獅子鄉衛生所@丹路活動中心12/26(一)上午0850-1200(         )" \
-              "1位獅子鄉衛生所@內獅活動中心12/26(一)下午1250-1600(          )" \
-              "1位內埔鄉衛生所@和興村活動中心12/28(三)下午1250-1600( 李昭仁 )" \
-              "1位牡丹鄉衛生所@牡丹集會所12/26(一)上午0850-1200(          )" \
-              "1位牡丹鄉衛生所@石門集會所12/26(一)下午1250-1600(       　)" \
-              "1位林邊鄉衛生所@林邊火車站12/27(二)下午1250-1600( 蘇榮承）" \
-              "1位滿州鄉衛生所@滿州鄉公所對面12/29(一)上午0850-1200(         )" \
-              "1位滿州鄉衛生所@永靖羅峰寺12/29(一)下午1250-1600(         )" \
-              "1位竹田鄉衛生所@西勢村辦公處12/29(四)上午0850-1200( 李昭仁 )" \
-              "1位潮州鎮衛生所@尚青黃昏市場12/30(五)下午1250-1600( 李昭仁 )" \
-              "1位支援費用：3435元（施打人數超過100人支援費用5000元）"
-        expect = {'潮州', '屏東'}
-        self.assertEqual(expect, self.tagger.keywords_from_msg(msg))
+    def test_debug_1(self):
+        response = JobMsgDebugResponse(
+            raw_msg="屏東多點/單次/疫苗?(其實公部門是可以找出名目，從3435 加到5000 的🤭🤔👈👈👈👈)與原住民共度聖誕跨年佳節，  "
+                    "這職缺貼文要轉念一下，親近大自然的好機會。屏東醫師公會會務人員，轉自轉知衛生局詢問需要找支援醫師，"
+                    "請可以支援醫師填寫姓名於下方空格，謝謝。支援單位@施打地點泰武鄉衛生所@Singlit樂智社區服務據點12"
+                    "/23(五)上午0850-1200 (          )"
+                    "1位來義鄉衛生所@南和活動中心12/24(六)上午0850-1200(洪敏榮)"
+                    "1位來義鄉衛生所@望嘉活動中心12/24(六)下午1250-1600(         )"
+                    "1位鹽埔鄉衛生所@7-11永盛門市12/24(六)上午0850-1200(          )"
+                    "1位鹽埔鄉衛生所@洛陽村龍虎宮12/24(六)下午1250-1600(          )"
+                    "1位春日鄉衛生所@力里集會所12/26(一)上午0850-1200(         )"
+                    "1位春日鄉衛生所@春日集會所12/26(一)下午1250-1600(         )"
+                    "1位獅子鄉衛生所@丹路活動中心12/26(一)上午0850-1200(         )"
+                    "1位獅子鄉衛生所@內獅活動中心12/26(一)下午1250-1600(          )"
+                    "1位內埔鄉衛生所@和興村活動中心12/28(三)下午1250-1600( 李昭仁 )"
+                    "1位牡丹鄉衛生所@牡丹集會所12/26(一)上午0850-1200(          )"
+                    "1位牡丹鄉衛生所@石門集會所12/26(一)下午1250-1600(       　)"
+                    "1位林邊鄉衛生所@林邊火車站12/27(二)下午1250-1600( 蘇榮承）"
+                    "1位滿州鄉衛生所@滿州鄉公所對面12/29(一)上午0850-1200(         )"
+                    "1位滿州鄉衛生所@永靖羅峰寺12/29(一)下午1250-1600(         )"
+                    "1位竹田鄉衛生所@西勢村辦公處12/29(四)上午0850-1200( 李昭仁 )"
+                    "1位潮州鎮衛生所@尚青黃昏市場12/30(五)下午1250-1600( 李昭仁 )"
+                    "1位支援費用：3435元（施打人數超過100人支援費用5000元）"
+        )
+        city_tagger.debug(response)
+        self.assertEqual({"屏東": {"屏東縣"}, "潮州": {"屏東縣"}}, response.keyword_to_cites)
 
-    def test_keywords_from_msg2(self):
-        msg = "禮聘優質醫師桃園，中壢，三峽優質社區診所聯盟，環境佳, 醫師相處互助融洽, 歡迎有衝勁或有經驗的醫師加入團隊，備有完整的基層看診培及入股機會, 培訓完成鼓勵醫師開業或合作經營舊診所或新診所開發, " \
-              "讓優質醫師共享創業利潤!科別不拘，家醫科內科復健科尤佳請聯絡03-2550908人資李主任安排各診所院長詳談時間, 期待找到熱情的您，一起跟著診所成長！(轉載 沈將軍 桃園群)"
-        expect = {'中壢', '三峽', '桃園'}
-        self.assertEqual(expect, self.tagger.keywords_from_msg(msg))
+    def test_debug_2(self):
+        response = JobMsgDebugResponse(
+            raw_msg="禮聘優質醫師桃園，中壢，三峽優質社區診所聯盟，環境佳, 醫師相處互助融洽, 歡迎有衝勁或有經驗的醫師加入團隊，"
+                    "備有完整的基層看診培及入股機會, 培訓完成鼓勵醫師開業或合作經營舊診所或新診所開發, "
+                    "讓優質醫師共享創業利潤!科別不拘，家醫科內科復健科尤佳請聯絡03-2550908人資李主任安排各診所院長詳談時間, "
+                    "期待找到熱情的您，一起跟著診所成長！(轉載 沈將軍 桃園群)"
+        )
+        city_tagger.debug(response)
+        self.assertEqual({"三峽": {"新北市"}, "桃園": {"桃園市"}, "中壢": {"桃園市"}}, response.keyword_to_cites)
 
-    def test_keywords_from_msg_empty(self):
-        msg = "以上職缺(部分重複刊登)轉載自5000人/實名制群 👉歡迎雇主自貼 待聘醫師自薦👈"
-        expect = set()
-        self.assertEqual(expect, self.tagger.keywords_from_msg(msg))
+    def test_debug_3(self):
+        response = JobMsgDebugResponse(
+            raw_msg="以上職缺(部分重複刊登)轉載自5000人/實名制群 👉歡迎雇主自貼 待聘醫師自薦👈"
+        )
+        city_tagger.debug(response)
+        self.assertEqual({}, response.keyword_to_cites)
