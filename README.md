@@ -2,9 +2,14 @@
 
 ...
 
+## Run FastAPI application
+```
+uvicorn main:app --reload
+```
+
 ## Instructions to build Python environment
 
-### Linux, using Python 3, virtualenv
+### Linux, using Python 3.10, virtualenv
 
 Install system packages
 
@@ -13,7 +18,7 @@ Install system packages
 Install remaining packages in virtualenv
 
     virtualenv -p `which python3` venv
-    venv/bin/pip3 install -r requirements.txt
+    ./venv/bin/pip3 install -r requirements.txt
 
 ### Run tests in command line
 
@@ -23,7 +28,7 @@ Run from root directory.
 
 or
 
-    ../venv/bin/python3 -m unittest discover tests
+    ./venv/bin/python3 -m unittest discover tests
 
 ### Run tests in PyCharm
 

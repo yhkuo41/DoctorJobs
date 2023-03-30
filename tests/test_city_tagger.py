@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from city_tagger import CityTagger
+from services.city_tagger import CityTagger
 
 
 class TestCityTagger(TestCase):

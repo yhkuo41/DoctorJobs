@@ -3,7 +3,7 @@ from pprint import pprint
 
 import numpy as np
 
-import msg_filter
+from services import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, str2set
 
 ALGO_CSV = "data/line_chat_20220307_algo.csv"
