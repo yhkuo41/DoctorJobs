@@ -4,10 +4,10 @@ import datetime
 import re
 from typing import Optional
 
-from services import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
-from services.city_tagger import CityTagger
-from services.department_tagger import DepartmentTagger
+from app.job_msg import msg_filter
+from app.job_msg.tagger.city_tagger import CityTagger
+from app.job_msg.tagger.department_tagger import DepartmentTagger
 
 SOURCE_TXT = "data/LINE______104A....txt"
 RESULT_CSV = "data/line_chat_20220307_algo.csv"

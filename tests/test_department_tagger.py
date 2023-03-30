@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from services.department_tagger import DepartmentTagger
+from app.job_msg.tagger.department_tagger import DepartmentTagger
 
 
 class TestDepartmentTagger(TestCase):
