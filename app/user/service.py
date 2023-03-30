@@ -21,7 +21,6 @@ async def new_user_register(user: UserBase, db: Collection) -> str:
         "email": user.email,
         "line_user_id": user.line_user_id,
         "name": user.name,
-        "create_ts": now,
         "update_ts": now,
         "is_delete": False
     })
