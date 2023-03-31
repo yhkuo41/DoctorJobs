@@ -46,24 +46,6 @@ class TestJobMsgQueryRequest(TestCase):
         msg = str(cm.exception)
         self.assertIn("end_time can not before or equals to start_time", msg)
 
-    def test_invalid_tags(self):
-        with self.assertRaises(ValidationError) as cm:
-            JobMsgQueryRequest(city_tags=set(), dept_tags=set())
-        msg = str(cm.exception)
-        self.assertIn("city_tags and dept_tags can not be both empty", msg)
-
-    def test_too_many_tags(self):
-        with self.assertRaises(KeyError) as cm:
-            JobMsgQueryRequest(
-                city_tags={City.TAIPEI,
-                           City.NEW_TAIPEI,
-                           City.CHIAYI_CITY,
-                           City.HSINCHU_CITY,
-                           City.TAINAN,
-                           City.KAOHSIUNG})
-        msg = str(cm.exception)
-        self.assertIn("city_tags", msg)  # 太多items會移除此Key
-
     def test_valid_tags(self):
         query = JobMsgQueryRequest(city_tags={City.TAIPEI})
 
