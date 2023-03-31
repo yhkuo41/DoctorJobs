@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Mapping, Any
 
 from fastapi import Query
-from pydantic import BaseModel, constr, EmailStr, root_validator, Field
+from pydantic import BaseModel, constr, conint, EmailStr, root_validator, Field
 
 from app.job_msg.tagger.city import City
 from app.job_msg.tagger.dept import Dept
@@ -155,13 +155,11 @@ class JobMsgQueryRequest(BaseModel):
     end_time: Optional[datetime]
     city_tags: set[City] = Field(Query(set()), max_items=5)
     dept_tags: set[Dept] = Field(Query(set()), max_items=5)
-    limit: int = 0
-    skip: int = 0
+    limit: conint(ge=0) = 0
+    skip: conint(ge=0) = 0
 
     @root_validator()
     def validate_all_fields(cls, field_values):
-        if not field_values["city_tags"] and not field_values["dept_tags"]:
-            raise ValueError("city_tags and dept_tags can not be both empty")
         if field_values["end_time"] and field_values["end_time"] <= field_values["start_time"]:
             raise ValueError("end_time can not before or equals to start_time")
         return field_values

@@ -19,7 +19,7 @@ async def create_or_update_job_msg(job_msg: JobMsgPutRequest,
                                    db: Database = Depends(database.get_db)) -> JobMsgIdResponse:
     """新增或更新job_msg</br>
     自動或手動標籤後，若city_tags和dept_tags都為空，則會拋出例外，之後會根據標籤撈取近期訊息，並判斷完全相同的訊息
-    為重複的訊息，若無重複訊息，則直接新增，若重複的訊息只有一筆，則直接更新，否則拋出例外</br>
+    為重複，若無重複訊息，則直接新增，若重複的訊息只有一筆，則直接更新，否則拋出例外</br>
 
     Returns: 新增或更新的job_msg_id
     """
@@ -53,7 +53,7 @@ async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=4096,
                                  levenshtein_ratio: confloat(ge=0, le=1) = 1.0) -> list[JobMsg]:
     """將原始訊息自動打上標籤後，以標籤搜尋近似的訊息，並以編輯距離判斷是否重複
 
-    Args:
+    Args:</br>
         raw_msg (): 原始訊息</br>
         levenshtein_ratio (): 編輯距離比門檻，如果為1.0則兩字串完全相同才視為重複</br>
 
@@ -68,14 +68,7 @@ async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=4096,
 @job_msg_router.get("/debug")
 async def debug_job_msg(raw_msg: constr(min_length=20, max_length=4096, strip_whitespace=True),
                         current_user: CurrentUserDep) -> JobMsgDebugResponse:
-    """除錯這則訊息，取得自動判別的行政區、醫師科別關鍵字與標籤
-
-    Args:
-        raw_msg (): 原始訊息</br>
-
-    Returns: 除錯資訊
-
-    """
+    """除錯這則訊息，取得自動判別的行政區、醫師科別關鍵字與標籤"""
     return await service.debug_job_msg(raw_msg)
 
 
@@ -95,7 +88,8 @@ async def get_job_msg(current_user: CurrentUserDep,
                       query: JobMsgQueryRequest = Depends(),
                       db: Database = Depends(database.get_db)) -> List[JobMsg]:
     """以時間及標籤條件查詢訊息，若要查詢第5筆到第7筆資料，則limit=3, skip=4</br>
-    Note: 行政區標籤及醫師科別標籤兩者不能都為空</br>
+
+    Note: 若city_tags和dept_tags都為空，會撈出較多訊息，給伺服器和資料庫造成負擔，不推薦這樣查詢</br>
 
     query.start_time: 起始時間，預設為近90日</br>
     end_time: 終止時間</br>

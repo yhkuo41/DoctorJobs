@@ -3,6 +3,7 @@ from urllib.parse import parse_qsl, urlencode
 
 import uvicorn
 from fastapi import FastAPI, Request
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse
 
 from app.auth.router import auth_router
@@ -21,7 +22,7 @@ app = FastAPI(
         "email": "yhkuo41@gmail.com",
     },
 )
-
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(index_router)
 app.include_router(user_router)
 app.include_router(auth_router)
