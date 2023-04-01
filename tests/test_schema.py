@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from pydantic import ValidationError
 
-from app.job_msg.schema import JobMsgPutRequest, ContactInfo, JobMsgQueryRequest
+from app.job_msg.schema import JobMsgPutRequest, ContactInfo, JobMsgQueryRequest, JobMsg
 from app.job_msg.tagger.city import City
 from app.job_msg.tagger.dept import Dept
 
@@ -50,3 +50,42 @@ class TestJobMsgQueryRequest(TestCase):
         query = JobMsgQueryRequest(city_tags={City.TAIPEI})
 
         self.assertEqual({City.TAIPEI}, query.city_tags)
+
+
+class TestJobMsg(TestCase):
+    def test_pretty_msg1(self):
+        job_msg = JobMsg(
+            job_msg_id="642724b05e7966237f8883d9",
+            raw_msg="* 誠徵［專任醫師］*"
+                    "1. 新北市下新莊 診所 ，近丹鳳/泰山貴和站，交通便利、有停車位。"
+                    "2.  誠徵  小兒科、家醫科、內科，急診， ENT、腸胃科 醫師3.  每周6-7診、 節次可議、 "
+                    "需上假日班、亦可先報備支援兼診4.  薪資優渥，執照費+診費+PPF，面洽5. 院長會親自分享開業、看診經驗、歡迎有志開業的醫師加入6. 詳情請洽  02-29066999林醫師",
+            city_tags={City.NEW_TAIPEI, City.TAIPEI},
+            dept_tags={Dept.FM, Dept.ER, Dept.GM, Dept.PEDIATRICS},
+            contact_info=ContactInfo(
+                telephone="02-29066999",
+                contact_person="林醫師"
+            ),
+            working_hours="每周6-7診、 節次可議",
+            create_ts=datetime.utcnow(),
+            update_ts=datetime.utcnow(),
+            is_delete=False,
+        )
+
+        expect = """*訊息id*
+642724b05e7966237f8883d9
+*原始訊息*
+
+* 誠徵［專任醫師］*1. 新北市下新莊 診所 ，近丹鳳/泰山貴和站，交通便利、有停車位。2.  誠徵  小兒科、家醫科、內科，急診， ENT、腸胃科 醫師3.  每周6-7診、 節次可議、 需上假日班、亦可先報備支援兼診4.  薪資優渥，執照費+診費+PPF，面洽5. 院長會親自分享開業、看診經驗、歡迎有志開業的醫師加入6. 詳情請洽  02-29066999林醫師
+
+*地區*
+新北市 臺北市
+*科別*
+內科 家庭醫學科 小兒科 急診醫學科
+*工作時間*
+每周6-7診、 節次可議
+*手機*
+02-29066999
+*聯絡人*
+林醫師"""
+        self.assertEqual(expect, job_msg.pretty_msg())
