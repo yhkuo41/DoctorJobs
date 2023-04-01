@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Optional, Mapping, Any
+from typing import Optional, Mapping, Any, List
 
 from fastapi import Query
 from pydantic import BaseModel, constr, conint, EmailStr, root_validator, Field
@@ -53,12 +53,12 @@ class JobMsgBase(BaseModel):
     :param salary_desc: 薪資待遇</br>
     :param working_hours: 工作時間</br>
     """
-    raw_msg: constr(min_length=20, max_length=4096)
+    raw_msg: constr(min_length=20, max_length=2000)
     city_tags: set[City] = set()
     dept_tags: set[Dept] = set()
     contact_info: Optional[ContactInfo]
     company: Optional[constr(min_length=1, max_length=256)]
-    job_desc: Optional[constr(min_length=1, max_length=4096)]
+    job_desc: Optional[constr(min_length=1, max_length=2000)]
     salary_desc: Optional[constr(min_length=1, max_length=256)]
     working_hours: Optional[constr(min_length=1, max_length=256)]
 
@@ -121,12 +121,24 @@ class JobMsgPutRequest(JobMsgBase):
 
 
 class JobMsg(JobMsgBase):
+    """職缺訊息及摘要</br>
+    :param raw_msg: 原始訊息</br>
+    :param city_tags: 行政區標籤</br>
+    :param dept_tags: 醫師科別標籤</br>
+    :param contact_info: 聯絡資訊</br>
+    :param company: 公司名稱</br>
+    :param job_desc: 工作內容</br>
+    :param salary_desc: 薪資待遇</br>
+    :param working_hours: 工作時間</br>
+    :param line_msg_id: 由line訊息新增的職缺訊息會有此欄位，收回訊息時，根據此欄位來移除</br>
+    """
     job_msg_id: str
     create_ts: datetime
     update_ts: datetime
     create_by: Optional[str]
     update_by: Optional[str]
     is_delete: bool
+    line_msg_id: Optional[str]
 
     @classmethod
     def from_mapping(cls, res: Mapping[str, Any]) -> Optional[JobMsg]:
@@ -146,8 +158,29 @@ class JobMsg(JobMsgBase):
             update_ts=res['update_ts'],
             create_by=res['create_by'],
             update_by=res['update_by'],
-            is_delete=res['is_delete']
+            is_delete=res['is_delete'],
+            line_msg_id=res.get('line_msg_id')
         )
+
+    def pretty_msg(self) -> str:
+        res = []
+        self.try_append(res, "訊息id", self.job_msg_id)
+        self.try_append(res, "原始訊息", f"\n{self.raw_msg}\n")
+        self.try_append(res, "地區", " ".join(sorted(self.city_tags)))
+        self.try_append(res, "科別", " ".join(sorted(self.dept_tags)))
+        self.try_append(res, "工作內容", self.job_desc)
+        self.try_append(res, "待遇", self.salary_desc)
+        self.try_append(res, "工作時間", self.working_hours)
+        if self.contact_info:
+            self.try_append(res, "手機", self.contact_info.telephone)
+            self.try_append(res, "email", self.contact_info.email)
+            self.try_append(res, "聯絡人", self.contact_info.contact_person)
+        return "\n".join(res)
+
+    @staticmethod
+    def try_append(res: List[str], prefix: str, s) -> None:
+        if s:
+            res.append(f"*{prefix}*\n{s}")
 
 
 class JobMsgQueryRequest(BaseModel):
@@ -176,7 +209,7 @@ class JobMsgDebugResponse(BaseModel):
     :param keyword_to_depts: 關鍵字 to 科別列表</br>
     :param keyword_to_neg_depts: 反向關鍵字 to 科別列表，排除過濾用</br>
     """
-    raw_msg: constr(min_length=20, max_length=4096)
+    raw_msg: constr(min_length=20, max_length=2000)
     keyword_to_cites: dict = {}
     keyword_to_depts: dict = {}
     keyword_to_neg_depts: dict = {}

@@ -130,6 +130,7 @@ class CityTagger:
         distinct_districts.union({k_ for k_, v_ in counter.items() if v_ == 1})
 
         for city, districts in city2dist.items():
+            self.keyword2city[city.value] = city  # 新竹縣:新竹縣
             self.keyword2city[city.value[:-1]] = city  # 臺北:臺北市
             for dist in districts:
                 self.keyword2city[city.value[:-1] + dist[:-1]] = city  # 臺北中正:臺北市

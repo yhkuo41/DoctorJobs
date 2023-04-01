@@ -47,7 +47,7 @@ async def create_or_update_job_msg(job_msg: JobMsgPutRequest,
 
 
 @job_msg_router.get("/duplicates")
-async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=4096, strip_whitespace=True),
+async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=2000, strip_whitespace=True),
                                  current_user: CurrentUserDep,
                                  db: Database = Depends(database.get_db),
                                  levenshtein_ratio: confloat(ge=0, le=1) = 1.0) -> list[JobMsg]:
@@ -66,7 +66,7 @@ async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=4096,
 
 
 @job_msg_router.get("/debug")
-async def debug_job_msg(raw_msg: constr(min_length=20, max_length=4096, strip_whitespace=True),
+async def debug_job_msg(raw_msg: constr(min_length=20, max_length=2000, strip_whitespace=True),
                         current_user: CurrentUserDep) -> JobMsgDebugResponse:
     """除錯這則訊息，取得自動判別的行政區、醫師科別關鍵字與標籤"""
     return await service.debug_job_msg(raw_msg)
