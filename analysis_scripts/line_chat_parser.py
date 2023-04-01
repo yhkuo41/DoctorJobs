@@ -63,6 +63,7 @@ class LineChatParser:
                 elif self.building_valid_msg():
                     # keep building old msg
                     self.cur_msg += line
+                    self.cur_msg += "\n"
         # flush last msg
         if self.building_valid_msg():
             self.flush_cur_msg()
