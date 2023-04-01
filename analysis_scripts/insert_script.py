@@ -16,6 +16,9 @@ if __name__ == '__main__':
     man_msgs = [m for m in man_msgs if m.is_recruitment and m.utc_ts >= RECENT]
     db = next(get_db())
 
+    total = len(man_msgs)
+    i = 0
+
     for m in man_msgs:
         job_msg = JobMsgPutRequest(raw_msg=m.content, auto_tag=True)
         if "博田國際醫院誠徵兼任內視鏡檢查操作醫師兼任時段" in job_msg.raw_msg:
@@ -36,4 +39,7 @@ if __name__ == '__main__':
         else:
             job_msg_id = asyncio.run(service.insert_job_msg(job_msg, USER_ID, db.job_msg))
         job_msg.job_msg_id = job_msg_id
+
+        i += 1
+        print(f"{i}/{total}")
         pprint(vars(job_msg))
