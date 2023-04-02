@@ -21,7 +21,8 @@ Export package information
     
 
 ### Run tests in command line
-
+    
+    pip install pytest pytest-cov
     python -m pytest
 
 ### Run tests in PyCharm
