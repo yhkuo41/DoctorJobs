@@ -20,13 +20,7 @@ Export package information
 
 ### Run tests in command line
 
-Run from root directory.
-
-    python -m unittest discover tests
-
-or
-
-    ./venv/bin/python3 -m unittest discover tests
+     python -m pytest
 
 ### Run tests in PyCharm
 
