@@ -2,10 +2,7 @@ version: '3'
 services:
   doctorjobs:
     image: doctorjobs:latest
-    secrets:
-      - doctorjobs_env
+    volumes:
+      - ./.env:/usr/doctorjobs/.env
     ports:
       - "8000:8000"
-secrets:
-  doctorjobs_env:
-    file: ./.env
