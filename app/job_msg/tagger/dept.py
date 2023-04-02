@@ -1,0 +1,28 @@
+from enum import Enum
+
+
+class Dept(str, Enum):
+    GM = "內科"
+    GS = "外科"
+    ENT = "耳鼻喉科"
+    NEURO = "神經內科"
+    NS = "神經外科"
+    OBGYN = "婦產科"
+    PEDIATRICS = "小兒科"
+    OPH = "眼科"
+    ANES = "麻醉科"
+    RAD = "放射線科"
+    DERMA = "皮膚科"
+    ORTH = "骨科"
+    GU = "泌尿科"
+    PSY = "精神科"
+    PATHO = "病理科"
+    REH = "復健科"
+    NUCLEAR = "核子醫學科"
+    ER = "急診醫學科"
+    FM = "家庭醫學科"
+    OM = "職業醫學科"
+    AESTHETIC = "醫學美容科"
+    IMAGING = "醫學影像科"
+    GENERAL = "一般科"
+    SPECIAL = "特殊需求"
