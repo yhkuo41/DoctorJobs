@@ -32,8 +32,14 @@ context menu of directory "Mark Directory As" -> "Sources Root").
 
 ## Run FastAPI application and Expose Port
 
-    uvicorn main:app --reload --port 8000
+    hypercorn --keyfile key.pem --certfile cert.pem main:app --bind 0.0.0.0:8000
     ngrok http 8000
+
+OR
+
+    hypercorn main:app --bind 0.0.0.0:8000
+    ngrok http 8000
+
 
 ## Docker
 ### Build Image
