@@ -1,91 +1,68 @@
-from typing import Optional
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi import HTTPException, Request
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, FollowEvent, UnfollowEvent
+from typing import Callable
+from urllib.parse import parse_qsl, urlencode
 
-import config
-from services import user_event_service, message_event_service
+import uvicorn
+from fastapi import FastAPI, Request
+from starlette.middleware.gzip import GZipMiddleware
+from starlette.responses import JSONResponse
 
-app = FastAPI()
-line_bot_api = LineBotApi(config.LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(config.LINE_CHANNEL_SECRET)
+from app.auth.router import auth_router
+from app.db.database import mongo_client
+from app.job_msg.line_job_msg_router import job_msg_line_router
+from app.job_msg.router import job_msg_router
+from app.router import index_router
+from app.user.router import user_router
 
-
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Optional[bool] = None
-
-
-# Line Bot only
-@app.post("/line_msg")
-async def post_line_msg(request: Request) -> str:
-    """LINE Bot webhook callback
-    Args:
-        request (Request): Request Object.
-    Raises:
-        HTTPException: Invalid Signature Error
-    Returns:
-        str: OK
-    """
-    signature = request.headers["X-Line-Signature"]
-    body = await request.body()
-
-    try:
-        handler.handle(body.decode(), signature)
-    except InvalidSignatureError:
-        raise HTTPException(status_code=400,
-                            detail="Invalid signature. Please check your channel access token/channel secret.")
-    return "OK"
+app = FastAPI(
+    title="DoctorJobs",
+    description="A service that collects and provides access to doctor job information",
+    version="0.0.1",
+    contact={
+        "name": "Y.H. Kuo",
+        "email": "yhkuo41@gmail.com",
+    },
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.include_router(index_router)
+app.include_router(user_router)
+app.include_router(auth_router)
+app.include_router(job_msg_router)
+app.include_router(job_msg_line_router)
 
 
-@handler.add(FollowEvent)
-def handle_follow(event) -> None:
-    """Event - User follow LINE Bot
-    Args:
-        event (LINE Event Object): Refer to https://developers.line.biz/en/reference/messaging-api/#follow-event
-    """
-    user_event_service.handle_follow(event=event)
+@app.exception_handler(ValueError)
+async def value_error_exception_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content={"message": str(exc)},
+    )
 
 
-@handler.add(UnfollowEvent)
-def handle_unfollow(event) -> None:
-    """Event - User ban LINE Bot
-    Args:
-        event (LINE Event Object): Refer to https://developers.line.biz/en/reference/messaging-api/#unfollow-event
-    """
-    user_event_service.handle_unfollow(event=event)
+@app.middleware("http")
+async def filter_blank_query_params(request: Request, call_next: Callable):
+    scope = request.scope
+    if scope and scope.get("query_string"):
+        filtered_query_params = parse_qsl(
+            qs=scope["query_string"].decode("latin-1"),
+            keep_blank_values=False,
+        )
+        scope["query_string"] = urlencode(filtered_query_params).encode("latin-1")
+    return await call_next(request)
 
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event) -> None:
-    """Event - User sent message
-    Args:
-        event (LINE Event Object): Refer to https://developers.line.biz/en/reference/messaging-api/#message-event
-    """
-    message_event_service.handle_message(event=event)
+@app.on_event("shutdown")
+def shutdown_event():
+    mongo_client.close()
 
 
-# Admin only
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
-
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
-
-
-# Everyone
-@app.get("/")
-def root_greeting():
-    return {"Hello! Here is DoctorJobs"}
-
-
-@app.get("/msgs/{msg_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+if __name__ == "__main__":
+    # Local WSGI: Uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        access_log=True,
+        use_colors=True,
+        reload=True,
+    )
