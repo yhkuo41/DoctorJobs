@@ -155,6 +155,7 @@ class CityTagger:
         for k, city in self.keyword2city.items():
             if k in response.raw_msg:
                 response.keyword_to_cites[k] = {city}
+        response.city_tags = self.tags_from_msg(response.raw_msg)
 
     def tags_from_msg(self, msg: str) -> set[City]:
         tags = set()

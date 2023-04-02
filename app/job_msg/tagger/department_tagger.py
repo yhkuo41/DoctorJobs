@@ -71,6 +71,7 @@ class DepartmentTagger:
         for nk, depts in self.neg_keywords2depts.items():
             if nk in response.raw_msg:
                 response.keyword_to_neg_depts[nk] = depts
+        response.dept_tags = self.tags_from_msg(response.raw_msg)
 
     def tags_from_msg(self, msg: str) -> set[Dept]:
         tags = set()

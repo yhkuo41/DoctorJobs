@@ -7,7 +7,7 @@ from pymongo.database import Database
 from app.auth.jwt import CurrentUserDep
 from app.db import database
 from app.job_msg import service
-from app.job_msg.schema import JobMsgPutRequest, JobMsgIdResponse, JobMsg, QUERY_TIME_LIMIT, JobMsgQueryRequest, \
+from app.job_msg.schema import JobMsgPutRequest, JobMsgIdResponse, JobMsg, JobMsgQueryRequest, \
     JobMsgDebugResponse
 
 job_msg_router = APIRouter(tags=["Job Message"], prefix="/job_msg")
@@ -24,25 +24,7 @@ async def create_or_update_job_msg(job_msg: JobMsgPutRequest,
     Returns: 新增或更新的job_msg_id
     """
     await service.tag_if_needed(job_msg)
-    duplicates = await service.find_duplicate_job_msgs(job_msg, db.job_msg)
-    if len(duplicates) > 1:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Found more than one identical job_msg with the same message in the last {QUERY_TIME_LIMIT.days} "
-                   f"days of data, duplicate msg ids: {[m.job_msg_id for m in duplicates]}. Please delete duplicate "
-                   f"job_msg"
-        )
-    if len(duplicates) == 1:  # update
-        if job_msg.job_msg_id and job_msg.job_msg_id != duplicates[0].job_msg_id:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Find a duplicate job_msg whose job_msg_id is '{duplicates[0].job_msg_id}', "
-                       f"and the job_msg_id to be updated is different from it"
-            )
-        job_msg.job_msg_id = duplicates[0].job_msg_id
-        job_msg_id = await service.update_job_msg(job_msg, current_user.user_id, db.job_msg)
-    else:
-        job_msg_id = await service.insert_job_msg(job_msg, current_user.user_id, db.job_msg)
+    job_msg_id = await service.find_duplicate_then_upsert(job_msg, db.job_msg, current_user.user_id)
     return JobMsgIdResponse(job_msg_id=job_msg_id)
 
 
@@ -51,13 +33,14 @@ async def get_duplicate_job_msgs(raw_msg: constr(min_length=20, max_length=2000,
                                  current_user: CurrentUserDep,
                                  db: Database = Depends(database.get_db),
                                  levenshtein_ratio: confloat(ge=0, le=1) = 1.0) -> list[JobMsg]:
-    """將原始訊息自動打上標籤後，以標籤搜尋近似的訊息，並以編輯距離判斷是否重複
+    """將原始訊息自動打上標籤後，以標籤搜尋近似的訊息，並以編輯距離判斷是否重複。
 
     Args:</br>
         raw_msg (): 原始訊息</br>
         levenshtein_ratio (): 編輯距離比門檻，如果為1.0則兩字串完全相同才視為重複</br>
 
-    Returns: 近期重複的訊息
+    Returns: 近期重複的訊息</br>
+    Notes: 若自動打上標籤後，無任何醫師科別與行政區標籤，則會拋出例外
 
     """
     job_msg = JobMsgPutRequest(raw_msg=raw_msg, auto_tag=True)
@@ -89,7 +72,7 @@ async def get_job_msg(current_user: CurrentUserDep,
                       db: Database = Depends(database.get_db)) -> List[JobMsg]:
     """以時間及標籤條件查詢訊息，若要查詢第5筆到第7筆資料，則limit=3, skip=4</br>
 
-    Note: 若city_tags和dept_tags都為空，會撈出較多訊息，給伺服器和資料庫造成負擔，不推薦這樣查詢</br>
+    Notes: 若city_tags和dept_tags都為空，會撈出較多訊息，給伺服器和資料庫造成負擔，不推薦這樣查詢</br>
 
     query.start_time: 起始時間，預設為近90日</br>
     end_time: 終止時間</br>

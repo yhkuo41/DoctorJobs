@@ -11,7 +11,7 @@ auth_router = APIRouter(tags=['Auth'])
 
 @auth_router.post('/login')
 def login(request: OAuth2PasswordRequestForm = Depends(), db: Database = Depends(database.get_db)):
-    """Note: the username in OAuth2 Form is user's account"""
+    """Notes: the username in OAuth2 Form is user's account"""
     user = service.get_user_by_account(request.username, db.user)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Invalid Credentials')

@@ -8,7 +8,7 @@ from app.job_msg import service
 from app.job_msg.schema import recent_ts, JobMsgPutRequest
 from app.job_msg.tagger.city import City
 
-USER_ID = "U138383ec9583e853cb6859090b5e6745"
+USER_ID = "64270aaf0b33365946992c45"
 RECENT = int(recent_ts().timestamp())
 
 if __name__ == '__main__':
