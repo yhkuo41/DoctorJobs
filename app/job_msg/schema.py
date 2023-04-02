@@ -72,7 +72,7 @@ class JobMsgBase(BaseModel):
 
 class JobMsgPutRequest(JobMsgBase):
     """職缺訊息及摘要</br>
-    Note: 非自動標記時，行政區標籤及醫師科別標籤兩者不能都為空，否則無法有效過濾查詢；自動標記時，若標記後兩者皆為空，則會拋出例外</br>
+    Notes: 非自動標記時，行政區標籤及醫師科別標籤兩者不能都為空，否則無法有效過濾查詢；自動標記時，若標記後兩者皆為空，則會拋出例外</br>
     :param raw_msg: 原始訊息</br>
     :param job_msg_id: 如果有job_msg_id，則會直接對此ID進行更新，否則為新增</br>
     :param auto_tag: 自動標記，將根據原始訊息，清除輸入的標籤，並自動打上新的行政區與醫師科別標籤</br>
@@ -83,11 +83,13 @@ class JobMsgPutRequest(JobMsgBase):
     :param job_desc: 工作內容</br>
     :param salary_desc: 薪資待遇</br>
     :param working_hours: 工作時間
+    :param line_msg_id: 關聯的line訊息ID，管理群收回訊息時可自動虛擬刪除用</br>
     """
     job_msg_id: Optional[str]
     auto_tag: bool = True
+    line_msg_id: Optional[str]
 
-    def to_update_mapping(self, now: datetime, current_user_id: str) -> dict[str:Any]:
+    def to_update_mapping(self, now: datetime, current_user_or_line_id: str) -> dict[str:Any]:
         return {
             "raw_msg": self.raw_msg,
             "city_tags": [e.value for e in self.city_tags],
@@ -98,30 +100,33 @@ class JobMsgPutRequest(JobMsgBase):
             "salary_desc": self.salary_desc,
             "working_hours": self.working_hours,
             "update_ts": now,
-            "update_by": current_user_id,
+            "update_by": current_user_or_line_id,
+            "line_msg_id": self.line_msg_id
         }
 
-    def to_insert_mapping(self, now: datetime, current_user_id: str) -> dict[str:Any]:
-        res = self.to_update_mapping(now, current_user_id)
+    def to_insert_mapping(self, now: datetime, current_user_or_line_id: str) -> dict[str:Any]:
+        res = self.to_update_mapping(now, current_user_or_line_id)
         res.update({
             "update_ts": now,
-            "create_by": current_user_id,
-            "update_by": current_user_id,
-            "is_delete": False
+            "create_by": current_user_or_line_id,
+            "update_by": current_user_or_line_id,
+            "is_delete": False,
+            "line_msg_id": self.line_msg_id
         })
         return res
 
     @staticmethod
-    def to_delete_mapping(now: datetime, current_user_id: str) -> dict[str:Any]:
+    def to_delete_mapping(now: datetime, current_user_or_line_id: str) -> dict[str:Any]:
         return {
             "update_ts": now,
-            "update_by": current_user_id,
+            "update_by": current_user_or_line_id,
             "is_delete": True
         }
 
 
 class JobMsg(JobMsgBase):
     """職缺訊息及摘要</br>
+    :param job_msg_id: 資料庫中的物件id</br>
     :param raw_msg: 原始訊息</br>
     :param city_tags: 行政區標籤</br>
     :param dept_tags: 醫師科別標籤</br>
@@ -130,7 +135,11 @@ class JobMsg(JobMsgBase):
     :param job_desc: 工作內容</br>
     :param salary_desc: 薪資待遇</br>
     :param working_hours: 工作時間</br>
-    :param line_msg_id: 由line訊息新增的職缺訊息會有此欄位，收回訊息時，根據此欄位來移除</br>
+    :param create_ts: 創建時間戳，由資料庫的物件ID解析得來</br>
+    :param update_ts: 更新時間戳</br>
+    :param create_by: 創建者user_id或line_user_id</br>
+    :param update_by: 更新者user_id或line_user_id</br>
+    :param line_msg_id: 關聯的line訊息ID，管理群收回訊息時可自動虛擬刪除用</br>
     """
     job_msg_id: str
     create_ts: datetime
@@ -208,8 +217,14 @@ class JobMsgDebugResponse(BaseModel):
     :param keyword_to_cites: 關鍵字 to 行政區</br>
     :param keyword_to_depts: 關鍵字 to 科別列表</br>
     :param keyword_to_neg_depts: 反向關鍵字 to 科別列表，排除過濾用</br>
+    :param msg_filter_accept_reasons: 訊息過濾器接受的原因</br>
+    :param msg_filter_reject_reasons: 訊息過濾器拒絕的原因</br>
     """
     raw_msg: constr(min_length=20, max_length=2000)
+    city_tags: set[City] = {}
+    dept_tags: set[Dept] = {}
     keyword_to_cites: dict = {}
     keyword_to_depts: dict = {}
     keyword_to_neg_depts: dict = {}
+    msg_filter_accept_reasons: List[str] = []
+    msg_filter_reject_reasons: List[str] = []

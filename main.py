@@ -16,7 +16,7 @@ from app.user.router import user_router
 app = FastAPI(
     title="DoctorJobs",
     description="A service that collects and provides access to doctor job information",
-    version="1.0.0",
+    version="0.0.1",
     contact={
         "name": "Y.H. Kuo",
         "email": "yhkuo41@gmail.com",

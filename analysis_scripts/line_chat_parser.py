@@ -4,8 +4,8 @@ import datetime
 import re
 from typing import Optional
 
-from analysis_scripts import msg_filter
 from analysis_scripts.line_chat_msg import LineChatMsg, csv_header
+from app.job_msg import msg_filter
 from app.job_msg.tagger.city_tagger import city_tagger
 from app.job_msg.tagger.department_tagger import dept_tagger
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         msg = LineChatMsg(utc_ts, res[1], res[2])
         msg.city_tags = [e.value for e in city_tagger.tags_from_msg(msg.content)]
         msg.dept_tags = [e.value for e in dept_tagger.tags_from_msg(msg.content)]
-        msg.is_recruitment = all(f.apply(msg) for f in msg_filter.filters)
+        msg.is_recruitment = all(f.apply(msg.content) for f in msg_filter.filters)
         msg_list.append(msg)
 
     with open(RESULT_CSV, 'w', encoding='UTF-8') as f:

@@ -1,6 +1,6 @@
 # Doctor Jobs
+A service that collects and provides access to doctor job information
 
-...
 ## Instructions to build Python environment
 
 ### Linux, using Python 3.10, virtualenv
@@ -41,7 +41,7 @@ context menu of directory "Mark Directory As" -> "Sources Root").
 ## Docker
 ### Build Image
 
-    DOCKER_BUILDKIT=1 docker build -t doctorjobs:latest .
+    DOCKER_BUILDKIT=1 docker build -t doctorjobs:0.0.1 .
 
 ### Run Docker Compose
 
