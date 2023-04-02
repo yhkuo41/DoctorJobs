@@ -16,11 +16,13 @@ Install remaining packages in virtualenv
 
 Export package information
 
-    pip freeze > requirements.txt
+    pip install pipreqs
+    pipreqs --force
+    
 
 ### Run tests in command line
 
-     python -m pytest
+    python -m pytest
 
 ### Run tests in PyCharm
 
@@ -35,8 +37,15 @@ context menu of directory "Mark Directory As" -> "Sources Root").
 ## Docker
 ### Build Image
 
-    DOCKER_BUILDKIT=1 docker build -t doctorjobs:0.0.1 .
+    DOCKER_BUILDKIT=1 docker build -t doctorjobs:latest .
 
 ### Run Docker Compose
 
     docker-compose up -d
+
+### Push to Docker Hub
+
+    docker tag doctorjobs:latest yhkuo41/doctorjobs:0.0.1
+    docker login
+    docker push yhkuo41/doctorjobs:0.0.1
+    
