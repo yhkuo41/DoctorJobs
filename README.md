@@ -33,7 +33,6 @@ context menu of directory "Mark Directory As" -> "Sources Root").
 ## Run FastAPI application and Expose Port
 
     hypercorn --keyfile key.pem --certfile cert.pem main:app --bind 0.0.0.0:8000
-    ngrok http 8000
 
 OR
 
