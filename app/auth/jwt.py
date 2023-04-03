@@ -5,10 +5,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
+from app import config
 from app.auth import schema
 from app.auth.schema import TokenData
 
-SECRET_KEY = "38f44aa9a7c62417fe76f77d064f6e9c99fa98497649e11176e17c504bb11ba0"
+SECRET_KEY = config.get_secret("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
