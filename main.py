@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.responses import JSONResponse
 
+from app import config
 from app.auth.router import auth_router
 from app.db.database import mongo_client
 from app.job_msg.line_job_msg_router import job_msg_line_router
@@ -24,7 +25,8 @@ app = FastAPI(
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(index_router)
-app.include_router(user_router)
+if config.get_secret("ENABLE_USER_ROUTER"):
+    app.include_router(user_router)
 app.include_router(auth_router)
 app.include_router(job_msg_router)
 app.include_router(job_msg_line_router)
