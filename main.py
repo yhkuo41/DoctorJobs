@@ -25,7 +25,7 @@ app = FastAPI(
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(index_router)
-if config.get_secret("ENABLE_USER_ROUTER"):
+if config.get_secret("ENABLE_USER_ROUTER", "").lower() == "true":
     app.include_router(user_router)
 app.include_router(auth_router)
 app.include_router(job_msg_router)
