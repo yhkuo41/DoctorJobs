@@ -1,9 +1,11 @@
 # Doctor Jobs
-A service that collects and provides access to doctor job information
+A chatbot that collects and helps users find doctor job information
 
-## Instructions to build Python environment
+![API Endpoints](./api_screenshot.png)
 
-### Linux, using Python 3.10, virtualenv
+## Build Instructions
+
+### Linux, using Python 3.10 or higher and virtualenv
 
 Install system packages
 
