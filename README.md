@@ -1,4 +1,4 @@
-# Doctor Jobs
+# DoctorJobs
 A chatbot that collects and helps users find doctor job information
 
 ![API Endpoints](./api_screenshot.png)
